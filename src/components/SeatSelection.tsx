@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { Train } from '../types';
-import { trainService } from '../services/api';
+import axios from 'axios';
 
 interface SeatSelectionProps {
     train: Train;
     onBook: (selectedSeats: string[]) => void;
     onBack: () => void;
+}
+
+interface BookedSeatsResponse {
+    bookedSeats: string[];
 }
 
 const SeatSelection: React.FC<SeatSelectionProps> = ({
@@ -17,83 +21,70 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
     const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [compartments, setCompartments] = useState<
-        Array<{
-            name: string;
-            seats: Array<{ number: string; booked: boolean }>;
-        }>
-    >([]);
+    const [bookedSeats, setBookedSeats] = useState<string[]>([]);
 
     useEffect(() => {
-        const fetchSeats = async () => {
+        const fetchBookedSeats = async () => {
             setLoading(true);
             setError(null);
             try {
-                const data = await trainService.getAvailableSeats(
-                    train.id,
-                    new Date().toISOString()
+                const date = new Date().toISOString().split('T')[0];
+                const time = new Date()
+                    .toTimeString()
+                    .split(' ')[0]
+                    .slice(0, 5);
+
+                const response = await axios.get<BookedSeatsResponse>(
+                    `http://localhost:3000/booked-seats?train_id=${train.id}&date=${date}&time=${time}`
                 );
-                // Transform API data to compartments format
-                // This is just an example, adjust according to your API response
-                const compartmentsData = [
-                    { name: 'A', seats: data.slice(0, 18) },
-                    { name: 'B', seats: data.slice(18, 36) },
-                    { name: 'C', seats: data.slice(36, 54) },
-                ];
-                setCompartments(compartmentsData);
+                setBookedSeats(response.data.bookedSeats);
             } catch {
-                setError('Failed to fetch seats. Using mock data.');
-                // Fallback to generating mock compartments
-                setCompartments([
-                    { name: 'A', seats: generateCompartment(0) },
-                    { name: 'B', seats: generateCompartment(18) },
-                    { name: 'C', seats: generateCompartment(36) },
-                ]);
+                setError('Failed to fetch booked seats. Using mock data.');
+                setBookedSeats(['A1', 'B5', 'C10']);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchSeats();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchBookedSeats();
     }, [train.id]);
 
-    const generateCompartment = (start: number) => {
+    const renderCompartment = (name: string) => {
         const seats = [];
-        for (let row = 0; row < 3; row++) {
-            for (let col = 0; col < 6; col++) {
-                const seatNumber = start + row * 6 + col + 1;
-                if (seatNumber <= train.seatsAvailable) {
-                    seats.push({
-                        number: `${seatNumber}`,
-                        booked: Math.random() > 0.7,
-                    });
-                }
-            }
+        for (let i = 1; i <= 40; i++) {
+            const seatId = `${name}${i}`;
+            const isBooked = bookedSeats.includes(seatId);
+            const isSelected = selectedSeats.includes(seatId);
+
+            seats.push(
+                <button
+                    key={seatId}
+                    disabled={isBooked}
+                    onClick={() => toggleSeat(seatId)}
+                    className={`
+                        p-2 rounded-md text-sm font-medium transition duration-200
+                        ${
+                            isBooked
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : isSelected
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-white border border-gray-300 text-gray-700 hover:border-indigo-500'
+                        }
+                    `}
+                >
+                    {i}
+                </button>
+            );
         }
         return seats;
     };
 
-    const toggleSeat = (compartment: string, seatNumber: string) => {
-        const seatId = `${compartment}${seatNumber}`;
+    const toggleSeat = (seatId: string) => {
         setSelectedSeats(prev =>
             prev.includes(seatId)
                 ? prev.filter(s => s !== seatId)
                 : [...prev, seatId]
         );
-    };
-
-    const handleBooking = async () => {
-        try {
-            await trainService.bookSeats(
-                train.id,
-                selectedSeats,
-                new Date().toISOString()
-            );
-            onBook(selectedSeats);
-        } catch {
-            setError('Failed to book seats. Please try again.');
-        }
     };
 
     if (loading) {
@@ -129,42 +120,17 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {compartments.map(compartment => (
+            <div className="space-y-6">
+                {['A', 'B', 'C'].map(compartment => (
                     <div
-                        key={compartment.name}
+                        key={compartment}
                         className="bg-white rounded-lg shadow-lg p-6"
                     >
                         <h3 className="text-lg font-bold text-gray-800 mb-4">
-                            Compartment {compartment.name}
+                            Compartment {compartment}
                         </h3>
-                        <div className="grid grid-cols-6 gap-2">
-                            {compartment.seats.map(seat => (
-                                <button
-                                    key={`${compartment.name}${seat.number}`}
-                                    disabled={seat.booked}
-                                    onClick={() =>
-                                        toggleSeat(
-                                            compartment.name,
-                                            seat.number
-                                        )
-                                    }
-                                    className={`
-                    p-2 rounded-md text-sm font-medium transition duration-200
-                    ${
-                        seat.booked
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : selectedSeats.includes(
-                                  `${compartment.name}${seat.number}`
-                              )
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:border-indigo-500'
-                    }
-                  `}
-                                >
-                                    {seat.number}
-                                </button>
-                            ))}
+                        <div className="grid grid-cols-8 gap-2">
+                            {renderCompartment(compartment)}
                         </div>
                     </div>
                 ))}
@@ -174,7 +140,7 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                     <div>
                         <p className="text-gray-600">
-                            Selected seats: {selectedSeats.length}
+                            Selected seats: {selectedSeats.join(', ')}
                         </p>
                         <p className="text-2xl font-bold text-indigo-600">
                             Total: ৳
@@ -184,7 +150,7 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
                         </p>
                     </div>
                     <button
-                        onClick={handleBooking}
+                        onClick={() => onBook(selectedSeats)}
                         disabled={selectedSeats.length === 0}
                         className="bg-indigo-600 text-white py-3 px-8 rounded-md hover:bg-indigo-700 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
