@@ -7,8 +7,10 @@ const api = axios.create({
   },
 });
 
+//send to irtiaz 
 export const trainService = {
   searchTrains: async (params: { from: string; to: string; date: string }) => {
+    console.log('searchTrains', params);
     try {
       const response = await api.get('/trains/search', { params });
       return response.data;

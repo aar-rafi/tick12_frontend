@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Train } from 'lucide-react';
 import SearchForm from './components/SearchForm';
 import TrainList from './components/TrainList';
 import SeatSelection from './components/SeatSelection';
+import Auth from './pages/Auth';
 import { Train as TrainType } from './types';
 
 function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [step, setStep] = useState<'search' | 'trains' | 'seats'>('search');
     const [selectedTrain, setSelectedTrain] = useState<TrainType | null>(null);
     const [searchParams, setSearchParams] = useState({
@@ -13,6 +15,17 @@ function App() {
         to: '',
         date: '',
     });
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    const handleAuthSuccess = () => {
+        setIsAuthenticated(true);
+    };
 
     const handleSearch = (params: typeof searchParams) => {
         setSearchParams(params);
@@ -30,15 +43,31 @@ function App() {
         setSelectedTrain(null);
     };
 
+    if (!isAuthenticated) {
+        return <Auth onAuthSuccess={handleAuthSuccess} />;
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="bg-indigo-600 text-white py-6 shadow-lg">
                 <div className="container mx-auto px-4">
-                    <div className="flex items-center space-x-2">
-                        <Train className="w-8 h-8" />
-                        <h1 className="text-2xl font-bold">
-                            Bangladesh Railways
-                        </h1>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                            <Train className="w-8 h-8" />
+                            <h1 className="text-2xl font-bold">
+                                Bangladesh Railways
+                            </h1>
+                        </div>
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('user');
+                                setIsAuthenticated(false);
+                            }}
+                            className="text-white hover:text-gray-200 transition-colors"
+                        >
+                            Sign Out
+                        </button>
                     </div>
                 </div>
             </header>
