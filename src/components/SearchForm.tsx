@@ -6,14 +6,16 @@ interface SearchFormProps {
 }
 
 const STATIONS = [
-    'Mumbai Central',
-    'New Delhi',
-    'Chennai Central',
-    'Howrah Junction',
-    'Bengaluru City',
-    'Ahmedabad Junction',
-    'Pune Junction',
-    'Hyderabad Deccan',
+    'Dhaka',
+    'Chittagong',
+    'Sylhet',
+    'Rajshahi',
+    'Khulna',
+    'Rangpur',
+    'Dinajpur',
+    'Comilla',
+    'Mymensingh',
+    'Jessore',
 ];
 
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {

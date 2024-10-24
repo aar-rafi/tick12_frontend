@@ -14,33 +14,43 @@ interface TrainListProps {
 const MOCK_TRAINS: Train[] = [
     {
         id: '1',
-        name: 'Rajdhani Express',
-        number: '12951',
+        name: 'Suborno Express',
+        number: 'SE701',
         departure: '06:00',
         arrival: '22:30',
         duration: '16h 30m',
-        price: 1200,
+        price: 850,
         seatsAvailable: 48,
     },
     {
         id: '2',
-        name: 'Shatabdi Express',
-        number: '12009',
+        name: 'Mohanagar Express',
+        number: 'ME703',
         departure: '08:30',
         arrival: '14:30',
         duration: '6h 00m',
-        price: 800,
+        price: 550,
         seatsAvailable: 32,
     },
     {
         id: '3',
-        name: 'Duronto Express',
-        number: '12213',
+        name: 'Ekota Express',
+        number: 'EE705',
         departure: '23:00',
         arrival: '13:30',
         duration: '14h 30m',
-        price: 1500,
+        price: 750,
         seatsAvailable: 24,
+    },
+    {
+        id: '4',
+        name: 'Tista Express',
+        number: 'TE707',
+        departure: '15:00',
+        arrival: '23:30',
+        duration: '8h 30m',
+        price: 650,
+        seatsAvailable: 36,
     },
 ];
 
@@ -113,7 +123,7 @@ const TrainList: React.FC<TrainListProps> = ({ searchParams, onSelect }) => {
 
                             <div className="space-y-2 text-center md:text-right">
                                 <p className="text-2xl font-bold text-indigo-600">
-                                    ₹{train.price}
+                                    ৳{train.price}
                                 </p>
                                 <div className="flex items-center justify-center md:justify-end space-x-2 text-gray-600">
                                     <Users className="w-4 h-4" />
