@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Clock, Users } from 'lucide-react';
 import { Train } from '../types';
+import { trainService } from '../services/api';
 
 interface TrainListProps {
     searchParams: {
@@ -11,6 +12,7 @@ interface TrainListProps {
     onSelect: (train: Train) => void;
 }
 
+// Keep MOCK_TRAINS as fallback data
 const MOCK_TRAINS: Train[] = [
     {
         id: '1',
@@ -55,6 +57,36 @@ const MOCK_TRAINS: Train[] = [
 ];
 
 const TrainList: React.FC<TrainListProps> = ({ searchParams, onSelect }) => {
+    const [trains, setTrains] = useState<Train[]>(MOCK_TRAINS);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchTrains = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const data = await trainService.searchTrains(searchParams);
+                setTrains(data);
+            } catch {
+                setError('Failed to fetch trains. Showing mock data instead.');
+                setTrains(MOCK_TRAINS);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTrains();
+    }, [searchParams]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-lg p-4">
@@ -78,8 +110,14 @@ const TrainList: React.FC<TrainListProps> = ({ searchParams, onSelect }) => {
                 </div>
             </div>
 
+            {error && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <p className="text-yellow-700">{error}</p>
+                </div>
+            )}
+
             <div className="space-y-4">
-                {MOCK_TRAINS.map(train => (
+                {trains.map(train => (
                     <div
                         key={train.id}
                         className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-200"
