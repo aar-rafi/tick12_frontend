@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+build/
+
+# Environment variables
+.env
+.env.*
+
+# Cache directories
+.cache/
+.eslintcache
+
+# System Files
+.DS_Store
+Thumbs.db
