@@ -1,10 +1,10 @@
 export interface Train {
-    id: string;
-    name: string;
-    number: string;
-    departure: string;
-    arrival: string;
-    duration: string;
+    train_id: string;
+    train_name: string;
+    // number: string;
+    departure_time: string;
+    // arrival: string;
+    // duration: string;
     price: number;
-    seatsAvailable: number;
+    // seatsAvailable: number;
 }

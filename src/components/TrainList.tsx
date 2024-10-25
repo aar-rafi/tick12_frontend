@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, Users } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Train } from '../types';
 import { trainService } from '../services/api';
 
 interface TrainListProps {
     searchParams: {
-        from: string;
-        to: string;
+        from_station_name: string;
+        to_station_name: string;
         date: string;
     };
     onSelect: (train: Train) => void;
@@ -15,44 +15,44 @@ interface TrainListProps {
 // Keep MOCK_TRAINS as fallback data
 const MOCK_TRAINS: Train[] = [
     {
-        id: '1',
-        name: 'Suborno Express',
-        number: 'SE701',
-        departure: '06:00',
-        arrival: '22:30',
-        duration: '16h 30m',
+        train_id: '0c355a51-ebb3-4082-a262-703a09273801',
+        train_name: 'Suborno Express',
+        // number: 'SE701',
+        departure_time: '06:00',
+        // arrival: '22:30',
+        // duration: '16h 30m',
         price: 850,
-        seatsAvailable: 48,
+        // seatsAvailable: 48,
     },
     {
-        id: '2',
-        name: 'Mohanagar Express',
-        number: 'ME703',
-        departure: '08:30',
-        arrival: '14:30',
-        duration: '6h 00m',
+        train_id: '2',
+        train_name: 'Mohanagar Express',
+        // number: 'ME703',
+        departure_time: '08:30',
+        // arrival: '14:30',
+        // duration: '6h 00m',
         price: 550,
-        seatsAvailable: 32,
+        // seatsAvailable: 32,
     },
     {
-        id: '3',
-        name: 'Ekota Express',
-        number: 'EE705',
-        departure: '23:00',
-        arrival: '13:30',
-        duration: '14h 30m',
+        train_id: '3',
+        train_name: 'Ekota Express',
+        // number: 'EE705',
+        departure_time: '23:00',
+        // arrival: '13:30',
+        // duration: '14h 30m',
         price: 750,
-        seatsAvailable: 24,
+        // seatsAvailable: 24,
     },
     {
-        id: '4',
-        name: 'Tista Express',
-        number: 'TE707',
-        departure: '15:00',
-        arrival: '23:30',
-        duration: '8h 30m',
+        train_id: '4',
+        train_name: 'Tista Express',
+        // number: 'TE707',
+        departure_time: '15:00',
+        // arrival: '23:30',
+        // duration: '8h 30m',
         price: 650,
-        seatsAvailable: 36,
+        // seatsAvailable: 36,
     },
 ];
 
@@ -93,7 +93,8 @@ const TrainList: React.FC<TrainListProps> = ({ searchParams, onSelect }) => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-bold text-gray-800">
-                            {searchParams.from} → {searchParams.to}
+                            {searchParams.from_station_name} →{' '}
+                            {searchParams.to_station_name}
                         </h2>
                         <p className="text-gray-600">
                             {new Date(searchParams.date).toLocaleDateString(
@@ -119,42 +120,42 @@ const TrainList: React.FC<TrainListProps> = ({ searchParams, onSelect }) => {
             <div className="space-y-4">
                 {trains.map(train => (
                     <div
-                        key={train.id}
+                        key={train.train_id}
                         className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-200"
                     >
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                             <div className="space-y-2">
                                 <h3 className="text-lg font-bold text-gray-800">
-                                    {train.name}
+                                    {train.train_name}
                                 </h3>
-                                <p className="text-sm text-gray-600">
+                                {/* <p className="text-sm text-gray-600">
                                     Train #{train.number}
-                                </p>
+                                </p> */}
                             </div>
 
                             <div className="flex items-center space-x-8">
                                 <div className="text-center">
                                     <p className="text-lg font-bold text-gray-800">
-                                        {train.departure}
+                                        {train.departure_time}
                                     </p>
+                                    <Clock className="w-5 h-5 text-gray-400" />
                                     <p className="text-sm text-gray-600">
-                                        {searchParams.from}
+                                        {searchParams.from_station_name}
                                     </p>
                                 </div>
 
-                                <div className="flex flex-col items-center">
-                                    <Clock className="w-5 h-5 text-gray-400" />
+                                {/* <div className="flex flex-col items-center">
                                     <p className="text-sm text-gray-600">
                                         {train.duration}
                                     </p>
-                                </div>
+                                </div> */}
 
                                 <div className="text-center">
-                                    <p className="text-lg font-bold text-gray-800">
+                                    {/* <p className="text-lg font-bold text-gray-800">
                                         {train.arrival}
-                                    </p>
+                                    </p> */}
                                     <p className="text-sm text-gray-600">
-                                        {searchParams.to}
+                                        {searchParams.to_station_name}
                                     </p>
                                 </div>
                             </div>
@@ -163,12 +164,12 @@ const TrainList: React.FC<TrainListProps> = ({ searchParams, onSelect }) => {
                                 <p className="text-2xl font-bold text-indigo-600">
                                     ৳{train.price}
                                 </p>
-                                <div className="flex items-center justify-center md:justify-end space-x-2 text-gray-600">
+                                {/* <div className="flex items-center justify-center md:justify-end space-x-2 text-gray-600">
                                     <Users className="w-4 h-4" />
                                     <span className="text-sm">
                                         {train.seatsAvailable} seats left
                                     </span>
-                                </div>
+                                </div> */}
                                 <button
                                     onClick={() => onSelect(train)}
                                     className="w-full md:w-auto bg-indigo-600 text-white py-2 px-6 rounded-md hover:bg-indigo-700 transition duration-200"

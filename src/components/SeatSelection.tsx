@@ -13,6 +13,11 @@ interface BookedSeatsResponse {
     bookedSeats: string[];
 }
 
+interface SeatAvailabilityResponse {
+    message: string;
+    success: string;
+}
+
 const SeatSelection: React.FC<SeatSelectionProps> = ({
     train,
     onBook,
@@ -34,8 +39,15 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
                     .split(' ')[0]
                     .slice(0, 5);
 
-                const response = await axios.get<BookedSeatsResponse>(
-                    `http://localhost:3000/booked-seats?train_id=${train.id}&date=${date}&time=${time}`
+                const rb = {
+                    train_id: train.train_id,
+                    date: date,
+                    time: time,
+                };
+
+                const response = await axios.post<BookedSeatsResponse>(
+                    `${import.meta.env.VITE_CACHE_API_URL}/api/booked-seats`,
+                    rb
                 );
                 setBookedSeats(response.data.bookedSeats);
             } catch {
@@ -47,7 +59,51 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
         };
 
         fetchBookedSeats();
-    }, [train.id]);
+    }, [train.train_id]);
+
+    const checkSeatAvailability = async (seatId: string): Promise<boolean> => {
+        try {
+            const date = new Date().toISOString().split('T')[0];
+            const time = new Date().toTimeString().split(' ')[0].slice(0, 5);
+            const rb = {
+                train_id: train.train_id,
+                date: date,
+                time: time,
+                seat_number: seatId,
+            };
+
+            // const response = await axios.get<SeatAvailabilityResponse>(
+            //     `http://localhost:3000/is-seat-booked?train_id=${train.train_id}&date=${date}&time=${time}&seat_number=${seatId}`
+            // );
+
+            const response = await axios.post<SeatAvailabilityResponse>(
+                `${import.meta.env.VITE_CACHE_API_URL}/api/book-seat`,
+                rb
+            );
+
+            if (response.data.success === 'Seat is booked') {
+                alert(`Seat ${seatId} has just been booked by another user.`);
+                setBookedSeats(prev => [...prev, seatId]);
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('Failed to check seat availability:', err);
+            return true; // Allow selection in case of API error
+        }
+    };
+
+    const toggleSeat = async (seatId: string) => {
+        if (selectedSeats.includes(seatId)) {
+            setSelectedSeats(prev => prev.filter(s => s !== seatId));
+            return;
+        }
+
+        const isAvailable = await checkSeatAvailability(seatId);
+        if (isAvailable) {
+            setSelectedSeats(prev => [...prev, seatId]);
+        }
+    };
 
     const renderCompartment = (name: string) => {
         const seats = [];
@@ -79,14 +135,6 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
         return seats;
     };
 
-    const toggleSeat = (seatId: string) => {
-        setSelectedSeats(prev =>
-            prev.includes(seatId)
-                ? prev.filter(s => s !== seatId)
-                : [...prev, seatId]
-        );
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -108,7 +156,7 @@ const SeatSelection: React.FC<SeatSelectionProps> = ({
 
                 <div className="space-y-2">
                     <h2 className="text-xl font-bold text-gray-800">
-                        {train.name}
+                        {train.train_name}
                     </h2>
                     <p className="text-gray-600">Select your preferred seats</p>
                 </div>

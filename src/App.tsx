@@ -5,14 +5,15 @@ import TrainList from './components/TrainList';
 import SeatSelection from './components/SeatSelection';
 import Auth from './pages/Auth';
 import { Train as TrainType } from './types';
+import axios from 'axios';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [step, setStep] = useState<'search' | 'trains' | 'seats'>('search');
     const [selectedTrain, setSelectedTrain] = useState<TrainType | null>(null);
     const [searchParams, setSearchParams] = useState({
-        from: '',
-        to: '',
+        from_station_name: '',
+        to_station_name: '',
         date: '',
     });
 
@@ -34,13 +35,59 @@ function App() {
 
     const handleTrainSelect = (train: TrainType) => {
         setSelectedTrain(train);
+        localStorage.setItem('selectedTrain', JSON.stringify(train));
         setStep('seats');
     };
 
-    const handleBooking = (selectedSeats: string[]) => {
+    const handleBooking = async (selectedSeats: string[]) => {
         alert(`Booked seats: ${selectedSeats.join(', ')}`);
-        setStep('search');
-        setSelectedTrain(null);
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const selectedTrain = JSON.parse(
+            localStorage.getItem('selectedTrain') || '{}'
+        );
+        const user_id = user.user_id;
+        const train_id = selectedTrain.train_id;
+        const jwt = localStorage.getItem('token');
+        const from_station_name = searchParams.from_station_name;
+        const to_station_name = searchParams.to_station_name;
+
+        if (
+            !user_id ||
+            !train_id ||
+            !from_station_name ||
+            !to_station_name ||
+            !jwt
+        ) {
+            alert('Missing booking information.');
+            return;
+        }
+
+        const requestBody = {
+            from_station_name,
+            to_station_name,
+            train_id,
+            user_id,
+            seat_numbers: selectedSeats,
+        };
+
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_TICKET_API_URL}/api/ticket/book`,
+                requestBody,
+                {
+                    headers: {
+                        Authorization: `Bearer ${jwt}`,
+                    },
+                }
+            );
+            alert(`Booked seats: ${selectedSeats.join(', ')}`);
+            setStep('search');
+            setSelectedTrain(null);
+            console.log('Booking response:', response.data);
+        } catch (error) {
+            console.error('Failed to book seats:', error);
+            alert('Failed to book seats. Please try again.');
+        }
     };
 
     if (!isAuthenticated) {
@@ -62,6 +109,7 @@ function App() {
                             onClick={() => {
                                 localStorage.removeItem('token');
                                 localStorage.removeItem('user');
+                                localStorage.removeItem('selectedTrain');
                                 setIsAuthenticated(false);
                             }}
                             className="text-white hover:text-gray-200 transition-colors"

@@ -2,7 +2,11 @@ import React from 'react';
 import { MapPin, Calendar } from 'lucide-react';
 
 interface SearchFormProps {
-    onSearch: (params: { from: string; to: string; date: string }) => void;
+    onSearch: (params: {
+        from_station_name: string;
+        to_station_name: string;
+        date: string;
+    }) => void;
 }
 
 const STATIONS = [
@@ -22,16 +26,16 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
-        const from = (form.from as HTMLSelectElement).value;
-        const to = (form.to as HTMLSelectElement).value;
+        const from_station_name = (form.from as HTMLSelectElement).value;
+        const to_station_name = (form.to as HTMLSelectElement).value;
         const date = (form.date as HTMLInputElement).value;
 
-        if (from === to) {
+        if (from_station_name === to_station_name) {
             alert('Please select different stations');
             return;
         }
 
-        onSearch({ from, to, date });
+        onSearch({ from_station_name, to_station_name, date });
     };
 
     return (

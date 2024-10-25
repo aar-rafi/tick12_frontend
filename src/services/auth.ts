@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8000';
 
 export interface User {
     user_id: string;
@@ -17,7 +17,7 @@ export interface AuthResponse {
 const auth = {
     async register(data: { name: string; phone_number: string; password: string }): Promise<AuthResponse> {
         try {
-            const response = await axios.post(`${API_URL}/user/register`, data);
+            const response = await axios.post(`${API_URL}/api/user/register`, data);
             return response.data;
         } catch (error) {
             console.error('Registration failed:', error);
@@ -36,7 +36,7 @@ const auth = {
 
     async login(data: { phone_number: string; password: string }): Promise<AuthResponse> {
         try {
-            const response = await axios.post(`${API_URL}/user/login`, data);
+            const response = await axios.post(`${API_URL}/api/user/login`, data);
             return response.data;
         } catch (error) {
             console.error('Login failed:', error);
